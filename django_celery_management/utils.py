@@ -3,13 +3,21 @@ from django_celery_beat.models import *
 
 import sys
 import os
+import re
 import json
 try:
     import yaml
 except:
     pass
 
-from pylibs import datetime_utils
+
+def _datetime_to_str(value):
+    if not value:
+        return 'Never'
+    s = value.isoformat()
+    s = re.sub(r'\+00\:00$', 'Z', s)
+    s = re.sub(r'(\.\d{3})\d+', r'\1', s)
+    return s
 
 
 def list_task():
@@ -22,7 +30,7 @@ def list_task():
             row.id,
             row.task[:40],
             row.total_run_count,
-            datetime_utils.localtime(row.last_run_at).strftime('%y-%m-%d %H:%M:%S'),
+            _datetime_to_str(row.last_run_at),
             str(row.crontab) if row.crontab_id else str(row.interval),
         ))
     print('{}-{}-{}-{}-{}'.format('#', '-'*3, '-'*40, '-'*4, '-'*17, '#'))
@@ -41,7 +49,7 @@ def get_task(**kwargs):
         if row.args != '[]': print('{:12s} {}'.format('args:', row.args))
         if row.kwargs != '{}': print('{:12s} {}'.format('kwargs:', row.kwargs))
         print('{:12s} {}'.format('Runs:', row.total_run_count))
-        print('{:12s} {}'.format('LastRun:', datetime_utils.localtime(row.last_run_at).strftime('%y-%m-%d %H:%M:%S')))
+        print('{:12s} {}'.format('LastRun:', _datetime_to_str(row.last_run_at)))
         if row.crontab_id: print('{:12s} {}'.format('Crontab:', str(row.crontab)))
         if row.interval_id: print('{:12s} {}'.format('Interval:', str(row.interval)))
         print('-'*32)
