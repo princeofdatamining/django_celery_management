@@ -100,7 +100,7 @@ def load_tasks(filename):
         sys.exit(1)
     with open(filename, encoding='utf-8') as fp:
         if filename.endswith('.yml'):
-            tasks = yaml.load(fp)
+            tasks = yaml.load(fp, Loader=yaml.SafeLoader)
         elif filename.endswith('.json'):
             tasks = json.load(fp)
         else:
